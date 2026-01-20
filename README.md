@@ -489,8 +489,6 @@ target 'UnityFramework' do
   pod 'AppLovinMediationChartboostAdapter','9.9.0.0'     #可选，chartboost广告源
   pod 'AppLovinMediationInMobiAdapter','10.8.3.1'         #可选，inmobi广告源
 end
-target 'Unity-iPhone' do
-end
 use_frameworks! :linkage => :static
 ```
 
