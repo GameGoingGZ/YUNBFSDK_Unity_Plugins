@@ -462,7 +462,8 @@ public class ArkKeyValue
 1.配置podfile文件：（这里为必须。另外如需添加其他广告源见[广告源配置]()）：**以下已经固定常见广告源版本，如果不需要的广告源可以去掉对应广告源的可选部分。必须部分不能去掉**。
 
 ```
-source 'https://cdn.cocoapods.org/'
+source 'https://cdn.cocoapods.org/' 											 # 必须
+source 'https://github.com/GameGoingGZ/CocoaPodsSpecs.git' # 必须
 
 platform :ios, '13.0'
 
