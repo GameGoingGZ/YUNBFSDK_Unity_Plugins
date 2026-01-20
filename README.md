@@ -1,81 +1,528 @@
-# DDLLSDK
+# YUNBFSDK Unity Plugin
 
 [版本更新记录](./RELEASE.md)
 
-## 集成
+## 环境要求
+### 开发工具
+Xcode 16.2.或之后的版本
 
-### 开发工具与配置
+Unity 2021.3.12 及以后版本
 
-xcode 16 及以后版本
+### iOS
 
-ios 最低支持版本13.0
+unity target(Unity-iPhone) : 16.0 *如果16.0出现编译错误，请改为13.1*
+unityframework target: 13.1
 
-### CocoaPods集成
+## Unity集成
 
-配置podfile文件：（这里为必须。另外如需添加其他广告源见[广告源配置]()）：**以下已经固定常见广告源版本，如果不需要的广告源可以去掉对应广告源的可选部分。必须部分不能去掉**。
+导入`YUNBFSDK_Unity_Plugin_xxxx.unitypackage`。
+
+## 接口使用
+
+### 配置
+
+**Tools/配置（快捷键Alt+G）**
+
+**<font color=red>*测试相关请在发布时务必取消勾选*</font>**
+
+初始化之前请先配置参数，具体数据可从运营获得：
+
+![config](./pics/config1.png)
+
+### 初始化
+
+```c#
+  YUNBFSDK.Instance.Init((success, info) =>
+  {
+      Debug.Log(success ? "SDK 初始化成功" : "SDK 初始化失败");
+  });
+```
+
+其中info是用户信息。
+
+**获取是否激励用户**
 
 ```
-source 'https://github.com/CocoaPods/Specs.git' # 必须
-source 'https://github.com/GameGoingGZ/CocoaPodsSpecs.git' # 必须
+ public bool IsReward()
+ {
+	 return YUNBFSDK.Instance.IsReward();
+ }
+```
+
+### H5入口模块
+#### 功能说明
+为提升SDK变现能力，接入方必须在产品端添加该模块入口图标，点击图标进入该H5模块。
+
+#### 图标说明
+SDK提供入口图标资源，图标默认隐藏状态。
+监听SDK接口回调事件：显示｜隐藏入口图标来控制用户是否能进入H5模块。
+
+#### 图标位置
+主页或者设置等二级页面。
+
+#### 版本说明
+大于等于`YUNBFSDK Unity Plugin` `6.4.4`版本，必须接入该模块。
+
+#### 初始化
+请在在SDK初始化成功后调用(即`YUNBFSDK.Instance.Init` 回调内)
+
+```c#
+YUNBFSDK.Instance.InitOffer((show) =>
+{
+    // 显示H5入口图标
+    Debug.Log("SDK:InitOffer >>> show:" + show);
+},
+(hide) =>
+{
+    // 隐藏H5入口图标
+    Debug.Log("SDK:InitOffer >>> hide:" + hide);
+});
+```
+
+#### 功能入口点击事件调用
+```c#
+YUNBFSDK.Instance.OnShowPage();
+```
+
+### 广告
+
+#### 激励视频
+
+展示
+
+```c#
+/// <summary>
+/// 展示激励视频广告
+/// </summary>
+/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
+/// <param name="didReward">激励回调，同时广告也关闭</param>
+/// <param name="didFail">展示失败回调</param>
+YUNBFSDK.Instance.ShowRewardVideo("TEST", () =>
+{
+		//给用户奖励，此时广告也关闭
+}, () =>
+{
+		//展示失败
+});
+```
+
+#### 插屏
+
+展示
+
+```c#
+/// <summary>
+/// 展示插屏
+/// </summary>
+/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
+/// <param name="didHide">广告关闭回调</param>
+/// <param name="didFail">展示失败回调</param>
+YUNBFSDK.Instance.ShowInterstitial("TEST_INS", () =>
+{
+		//广告展示完成，关闭
+  
+}, () =>
+{
+		//展示失败
+});
+```
+
+#### 开屏广告
+
+展示
+
+```c#
+/// <summary>
+/// 展示开屏广告，由于广告加载需要时间，建议开发者在应用启动时多等待几秒再调用开屏广告
+/// </summary>
+/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
+/// <param name="didHide">广告关闭回调</param>
+/// <param name="didFail">展示失败回调</param>
+YUNBFSDK.Instance.ShowOpenAd("TEST_OPEN", () =>
+{
+		//广告展示完成，关闭
+  
+}, () =>
+{
+		//展示失败
+});
+```
+
+#### Banner 广告
+
+Banner 广告目前只支持放在底部且只支持单一UnitID，单一场景，广告高度为50pt,
+
+游戏画面底部预留的高度
+
+- 全屏iPhone(没有物理home键)预留(50+34)=83pt
+- 非全屏iPhone预留 50pt
+
+展示
+```c#
+/// <summary>
+/// 展示Banner广告
+/// </summary>
+/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
+/// <param name="didHide">广告关闭回调</param>
+/// <param name="didFail">展示失败回调</param>
+YUNBFSDK.Instance.ShowBannerAd("TEST_BAN", () =>
+{
+   Debug.Log("SDK :BANNER DID_Hide");
+},
+() =>
+{
+    Debug.Log("SDK :BANNER DID_FAIL");
+});
+```
+
+隐藏
+```c#
+// <summary>
+/// 隐藏Banner广告
+/// </summary>
+/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
+YUNBFSDK.Instance.HiddenBannerAd("TEST_BAN");
+```
+
+#### 广告是否有缓存
+```c#
+/// 激励广告有无缓存，true=有缓存
+YUNBFSDK.Instance.IsRewardVideoReady();
+
+/// 插屏广告有无缓存，true=有缓存
+YUNBFSDK.Instance.IsInterstitialReady();
+
+/// 开屏广告有无缓存，true=有缓存
+YUNBFSDK.Instance.IsOpenAdReady();
+```
+
+### 广告价格监听
+```c#
+Events.onAdRevenue += (adInfo) =>
+{
+// do something
+};
+```
+
+### 提现相关
+```c#
+/// <summary>
+/// 申请小额提现
+/// </summary>
+/// <param name="assetsType">资产类型，0:金币 8:美金</param>
+/// <param name="paymentType">支付方式</param>
+/// <param name="account">提现账户：即用户邮箱或电话号码</param>
+/// <param name="name">提现用户昵称,PagBank,Pix类型必填,其中pix 的value 可以用gerenshibiehao</param>
+/// <param name="amount">提现数额</param>
+/// <param name="act"></param>
+/// <param name="disanfangzhanghuleixing">PIX类型必填 C，传值 E、P、C、B E:邮箱 P:手机号 C:(个人税号(CPF)/企业税号(CNPJ) B:(虚拟支付地址(EVP))</param>
+/// <param name="gerenshibiehao">PagBank,PIX类型必填 , 收款方个人识别号码，在不同国家下可选类型不同 格式： 999.999.999-99 或 99999999999</param>
+YUNBFSDK.Instance.RequestMicroWW(0,"Paypal","testsdfsdfs@gmail.com","",0.01,(bool suc, WithdrawRequestResponse data) => {
+    Debug.Log("SDK :tixian" + suc + data?.data?.id);
+});
+
+/// <summary>
+/// 获取提现记录
+/// </summary>
+/// <param name="assetsType">货币类型,0:金币提现,8:现金提现</param>
+/// <param name="withdrawType">0:普通提现，2: 固定小额提款, 3: 邀请好友提现 6:T3 小额提现</param>
+/// <param name="act"></param>
+ YUNBFSDK.Instance.GetWWRecord((bool suc, WithdrawRecordData data) => {
+        Debug.Log("SDK :tixianjilu" + suc + data?.total);
+});
+```
+
+### 统计
+
+#### 打点到BI
+
+不带参数
+
+```c#
+YUNBFSDK.Instance.Track("eventName");
+```
+
+附带拓展参数
+
+```c#
+YUNBFSDK.Instance.Track("eventName","key1","value1","key2",2222);
+```
+
+TrackImmediately 是即时上报打点，*谨慎使用，除非此事件非常重要，否则尽量避免使用*
+
+
+#### 打点到AppsFlyer
+
+如果有特殊需要，可使用下列方法打点到AppsFlyer
+
+```c#
+Dictionary<string, string> eventValues = new Dictionary<string, string>();
+eventValues.Add("key1", "value1");
+eventValues.Add("key2", "value2");
+Analytics.TrackAF("eventName", eventValues);
+```
+
+### 网络接口
+
+⚠️ ***注意：所有接口请在初始化完成后调用。***
+
+#### 获取配置
+
+获取Ark配置
+
+```c#
+/// <summary>
+/// 请求方舟策略
+/// </summary>
+/// <param name="bizCodes">请求的业务编码，多个之间使用半角逗号分隔</param>
+/// <param name="completeAction"></param>
+YUNBFSDK.Instance.FetchArkConfig("TestID",((success, configs) =>
+{
+    if (success)
+    {
+        foreach (var abData in configs)
+        {
+            // abData.vid 当前配置的唯一标识
+            foreach (var kv in abData.fields)
+            {
+
+                if (kv.fkey.Equals("TestID"))
+                {
+                    //   kv.fvalue  是配置信息
+                }
+            }
+        }
+    }
+
+
+}));
+```
+
+#### 获取用户分层
+```c#
+YUNBFSDK.Instance.RequestTierInfo((success, tierInfo) => {
+    Debug.Log("用户分层结果:RequestTierInfo:" + tierInfo.ToJson());
+});
+```
+
+## 数据结构
+
+### UserInfo
+
+```c#
+ public class YUNBFUserInfo
+ {
+     /// <summary>
+     /// 是否激励用户
+     /// </summary>
+     public bool Reward { get; set; }
+     /// <summary>
+     /// 用户ID
+     /// </summary>
+     public string Uk { get; set; }
+     /// <summary>
+     /// 活跃天数
+     /// </summary>
+     public int ActiveDays { get; set; }
+     /// <summary>
+     /// 注册天数
+     /// </summary>
+     public int RegisterDays { get; set; }
+     /// <summary>
+     /// 服务器时间戳
+     /// </summary>
+     public double ServerTimeStamp { get; set; }
+
+     /// <summary>
+     /// 服务器时间
+     /// </summary>
+     public string Now { get; set; }
+
+     /// <summary>
+     /// 国家
+     /// </summary>
+     public string Country { get; set; }
+     /// <summary>
+     /// 注册时间
+     /// </summary>
+     public double CreateTimeStamp { get; set; }
+
+     /// <summary>
+     /// 邀请码
+     /// </summary>
+     public string InviteCode { get; set; }
+
+     /// <summary>
+     /// 渠道信息
+     /// </summary>
+     public string Channel { get; set; }
+ }
+```
+
+### WithdrawRecordData
+```c#
+/// <summary>
+/// 提现记录数据
+/// </summary>
+[Serializable]
+public class WithdrawRecordData
+{
+    public float total;
+
+    public List<WithdrawRecordItemData> list;
+
+    public Balances[] zhanghuyue;
+}
+```
+
+### WithdrawRecordItemData
+```c#
+/// <summary>
+/// 提现记录数据项
+/// </summary>
+[Serializable]
+public class WithdrawRecordItemData
+{
+    /// <summary>
+    /// 记录ID
+    /// </summary>
+    public string id;
+
+    /// <summary>
+    /// 提现类型, (默认)0:金币提现 , 8: 现金提现
+    /// </summary>
+    public int zichanleixing;
+
+    /// <summary>
+    /// 提现方式,Paypal,Zhifubao,ovo,paytm,phonebill-Telkomsel,phonebill-Tairtel,giftcard-amazon中任一种
+    /// </summary>
+    public string zhifufangshi;
+
+    /// <summary>
+    /// 提现金额
+    /// </summary>
+    public float total;
+
+    /// <summary>
+    /// 0:用户提交申请 , 1:已审核通过, 2: 驳回, 3: 已打款
+    /// </summary>
+    public int status;
+
+    /// <summary>
+    /// 提现时间
+    /// </summary>
+    public string tixianshijian;
+}
+```
+
+### ArkData
+```c#
+/// <summary>
+/// 方舟配置
+/// </summary>
+[System.Serializable]
+public class ArkData
+{
+    /// <summary>
+    /// 版本号
+    /// </summary>
+    public string vid;
+
+    /// <summary>
+    /// 业务编码
+    /// </summary>
+    public string biz;
+
+  /// <summary>
+  /// 变量列表
+  /// </summary>
+  public List<ArkKeyValue> fields;
+}
+```
+
+### ArkKeyValue
+```c#
+public class ArkKeyValue
+{
+    /// <summary>
+    /// key
+    /// </summary>
+    public string fkey;
+
+    /// <summary>
+    /// value
+    /// </summary>
+    public string fvalue;
+}
+```
+
+# Xcode项目配置：
+
+1.配置podfile文件：（这里为必须。另外如需添加其他广告源见[广告源配置]()）：**以下已经固定常见广告源版本，如果不需要的广告源可以去掉对应广告源的可选部分。必须部分不能去掉**。
+
+```
+source 'https://cdn.cocoapods.org/'
 
 platform :ios, '13.0'
-use_modular_headers!  #必须
-target '你的项目Target' do 
-	pod 'FirebaseAnalytics', :modular_headers => true      # 必须
- 	pod 'FirebaseCrashlytics', :modular_headers => true    # 必须
-  pod 'AppsFlyerFramework','6.15.3'                      # 必须
-  pod 'DDLLSDK', '6.8.0'														     # 必须
-  pod 'AppLovinSDK','13.3.1'                             # 必须
-  pod 'AppLovinMediationBidMachineAdapter','3.3.0.0.2'   # 可选，BidMachine广告源
-  pod 'AppLovinMediationBigoAdsAdapter','4.8.1.0'        # 可选，Bigo广告源
-  pod 'AppLovinMediationByteDanceAdapter','7.4.1.0.0'    # 可选，pangle广告源
-  pod 'AppLovinMediationFacebookAdapter','6.20.1.0'      # 可选，Facebook广告源
-  pod 'AppLovinMediationFyberAdapter' ,'8.3.8.0'         # 可选，fyber/dt exchange广告源
-  pod 'AppLovinMediationGoogleAdapter','12.8.0.0'        # 可选，admob广告源
-  pod 'AppLovinMediationGoogleAdManagerAdapter' ,'12.8.0.0' # 可选，google ad manager广告源
-  pod 'AppLovinMediationIronSourceAdapter' ,'8.10.0.0.1'    # 可选，ironsource广告源
-  pod 'AppLovinMediationMintegralAdapter','7.7.8.0.0'       # 可选，Mintegral广告源
-  pod 'AppLovinMediationVungleAdapter','7.5.2.0'            # 可选，vungle广告源
-  pod 'AppLovinMediationUnityAdsAdapter','4.16.5.0'         # 可选，unity广告源
-  pod 'AppLovinMediationVerveAdapter','3.6.0.0'             # 可选，verve广告源
-  pod 'AppLovinMediationYandexAdapter','7.15.1.0'           # 可选，yandex广告源
-  pod 'AppLovinMediationMolocoAdapter','4.1.2.0'            # 可选，moloco广告源
-  pod 'AppLovinMediationChartboostAdapter','9.9.0.0'        # 可选，chartboost广告源
-  pod 'AppLovinMediationInMobiAdapter','10.8.3.1'           # 可选，inmobi广告源
+
+target 'UnityFramework' do
+  pod 'FirebaseAnalytics', :modular_headers => true      #必须
+  pod 'FirebaseCrashlytics', :modular_headers => true    #必须
+  pod 'FirebaseRemoteConfig', :modular_headers => true   #必须
+  pod 'AppsFlyerFramework','6.15.3'                      #必须
+  pod 'AppLovinSDK','13.3.1'                           #必须
+  pod 'AppLovinMediationBidMachineAdapter','3.3.0.0.2'  #可选，BidMachine广告源
+  pod 'AppLovinMediationBigoAdsAdapter','4.8.1.0'       #可选，Bigo广告源
+  pod 'AppLovinMediationByteDanceAdapter','7.4.1.0.0'    #可选，pangle广告源
+  pod 'AppLovinMediationFacebookAdapter','6.20.1.0'      #可选，Facebook广告源
+  pod 'AppLovinMediationFyberAdapter' ,'8.3.8.0'       #可选，fyber/dt exchange广告源
+  pod 'AppLovinMediationGoogleAdapter','12.8.0.0'          #可选，admob广告源
+  pod 'AppLovinMediationGoogleAdManagerAdapter' ,'12.8.0.0'    #可选，google ad manager广告源
+  pod 'AppLovinMediationIronSourceAdapter' ,'8.10.0.0.1'     #可选，ironsource广告源
+  pod 'AppLovinMediationMintegralAdapter','7.7.8.0.0'        #可选，Mintegral广告源
+  pod 'AppLovinMediationVungleAdapter','7.5.2.0'             #可选，vungle广告源
+  pod 'AppLovinMediationUnityAdsAdapter','4.16.5.0'        #可选，unity广告源
+  pod 'AppLovinMediationVerveAdapter','3.6.0.0'           #可选，verve广告源
+  pod 'AppLovinMediationYandexAdapter','7.15.1.0'            #可选，yandex广告源
+  pod 'AppLovinMediationMolocoAdapter','4.1.2.0'          #可选，moloco广告源
+  pod 'AppLovinMediationChartboostAdapter','9.9.0.0'     #可选，chartboost广告源
+  pod 'AppLovinMediationInMobiAdapter','10.8.3.1'         #可选，inmobi广告源
 end
+target 'Unity-iPhone' do
+end
+use_frameworks! :linkage => :static
 ```
 
-podfile文件夹目录下执行以下命令：
+2.podfile文件夹目录下执行脚本：
 
-``` shell
-pod install
-# 如果使用 pod install 报错，请使用以下命令
-# pod install --repo-update
+ 打开终端，进入当项目目录（pod在项目根目录），在podfile的上层目录执行脚本。需要先安装CocosPod，**注意首次需要pod install --repo-update，后续可以使用pod install**。
+
+```
+pod install --repo-update
 ```
 
-### 其他配置
+3.xcode 工程根目录位置打开终端 -> 执行 ruby AppLovinQualityServiceSetup-ios.rb
 
-1.xcode 工程根目录位置打开终端 -> 执行 ruby AppLovinQualityServiceSetup-ios.rb
 
-2.使用生成好的文件打开项目：
+4.使用生成好的文件打开项目：
 
-![](./pics/zhixingpod.png)
+![zhixingpod](./pics/zhixingpod.png)
 
-3.添加info.plist参数：添加广告源后需要添加，默认需要添加Applovin的（详情：https://developers.applovin.com/en/max/ios/overview/skadnetwork/）
+5.添加info.plist参数：添加广告源后需要添加，默认需要添加Applovin的（详情：https://developers.applovin.com/en/max/ios/overview/skadnetwork/）
 
-![](./pics/info.plist.png)
+![info.plist](./pics/info.plist.png)
 
-4.关于firebase，需要去firebase后台下载GoogleService-Info.plist文件方法到项目根目录，详情咨询运营。
+6.关于firebase，需要去firebase后台下载GoogleService-Info.plist文件方法到项目根目录，详情咨询运营。
 
-5..关于firebase崩溃监控：需要配置上传崩溃文件：
+.关于firebase崩溃监控：需要配置上传崩溃文件：
 
 a.配置dSYM 
 
-![](./pics/dsym.png)
+![dsym](./pics/dsym.png)
 
 b.配置映射上传脚本：
 
-![](./pics/inputfile.png)
+![inputfile](./pics/inputfile.png)
 
 脚本：
 
@@ -114,346 +561,23 @@ $(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)
 
 2.将对应广告的配置添加到Info.plist中，注意使用admob时amdob appid必须添加：
 
-![](./pics/admobappid.png)
+![admobappid](./pics/admobappid.png)
 
-### 发布配置
-
-1.关闭Log日志开关(上线必须关闭)
-
-```objective-c
-  [ [DDLLConfig getInstance]setPrintLog:NO]];
-```
-
-2.关闭debug模式（上线必须关闭）
-
-```objc
-  [ [DDLLConfig getInstance]setDebug:NO]];
-```
-
-## 接口使用
-
-### 配置
-
-```objective-c
-#import <DDLLSDK/DDLLSDK.h>//SDK头文件
-#import <DDLLSDK/DDLLSDK-Swift.h>//SDK头文件
-
-DDLLConfig *config = [DDLLConfig getInstance];
-[config setAppKey:@""]; // 设置Appkey
-[config setAppSecret:@""]; // 设置AppSecret
-[config setDebug:YES]; // 是否测试环境，上线时必须设置为NO
-[config setPrintLog:YES]; // 是否打印log，上线时必须设置为NO
-[config setUmkAppId:@"test"]; // 可选，当用到服务器推送时需要填入，umk app id
-[config setAfDevKey:@"test"]; // AppsFlyer Dev Key
-[config setIosAppId:@"一串数字"]; // iOS环境下需填入开发者后台的app id
-[config setServerUrl:@"https://test"]; // 业务域名,务必以https开头
-[config setStatUrl:@"https://test"]; // 打点域名,务必以https开头
-[config setAdAppKey:@"test"]; // Max App Key
-[config setConfigType:@"mediation"];
-[config setVideoID:@"test"]; // 视频广告 ID
-[config setInsID:@"test"]; // 插屏广告 ID
-[config setOpenID:@"test"]; // 开屏广告 ID
-[config setBannerID:@"bac370eebd7370fd"]; // 横幅广告ID
-[config setPrivacyPolicyUri:@"https://docs.google.com/d?usp=sharing"]; // 这是一个示例地址，请填写真实地址
-[config setTermsOfServiceUri:@"https://docs.google.com/edit?usp=sharing"]; // 这是一个示例地址，请填写真实地址
-
-// 可以通过接口打印查看当前配置
-// NSLog(@"当前配置%@",[[DDLLConfig getInstance]toJson]);
-```
-
-### 初始化
-
-```c#
-// DDLLUserInfo为用户信息
-[[DDLLManager getInstance]initWithCompletion:^(BOOL suc,DDLLUserInfo* userInfo)  {
-    NSLog(@"初始化%@",suc?@"成功":@"失败");
-} uiViewController:self];
-    
-NSLog(@"当前sdk版本号：%@，版本Name：%@",[[DDLLManager getInstance]getVersionCode],
-[[DDLLManager getInstance]getVersionName]);
-  
-```
-
-其中info是用户信息。
-
-### 广告
-
-#### 激励视频
-
-查看广告是否加载成功
-
-```objective-c
-[[DDLLManager getInstance]isRewardAdReady];//激励视频是否加载成功，成功返回1，失败返回0
-```
-
-加载并展示
-
-```c#
-/// <summary>
-/// 加载并展示激励视频广告（激励、插屏、开屏之间比价展示）
-/// 没有广告缓存会发起广告请求，5秒内有缓存则展示，无则回调展示失败
-/// </summary>
-/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
-/// <param name="didReward">激励回调，同时广告也关闭</param>
-/// <param name="didFail">展示失败回调</param>
-[[DDLLManager getInstance] load2showRewardAdWithSceneID:@"" didReward:^(NSString * _Nullable adUnitId) {
-       //激励回调，同时广告也关闭
-    } didFail:^(NSString * _Nullable adUnitId) {
-        //展示失败回调
-    }];
-
-```
-
-#### 插屏
-
-查看广告是否加载成功
-
-```objective-c
-[[DDLLManager getInstance]isInterstitialAdReady];//插屏广告是否加载成功，成功返回1，失败返回0
-```
-
-展示
-
-```c#
-/// <summary>
-/// 展示插屏（插屏、开屏之间比价展示）
-/// </summary>
-/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
-/// <param name="didHide">广告关闭回调</param>
-/// <param name="didFail">展示失败回调</param>
-[[DDLLManager getInstance]showInterstitialWithSceneID:@"test" didHide:^(NSString * _Nullable adUnitId) {
-        //广告展示完成，关闭
-    } didFail:^(NSString * _Nullable adUnitId) {
-       //展示失败
-    }];
-```
-
-#### 开屏广告
-
-预加载开屏：
-
-```objective-c
-///开屏需要提前预加载才能判断有没有缓存，否则一直都是没缓存
-[[DDLLManager getInstance] preLoadOpenAd];
-```
-
-查看广告是否加载成功
-
-```objective-c
-[[DDLLManager getInstance]isOpenAdReady];//开屏广告是否加载成功，成功返回1，失败返回0
-```
-
-展示
-
-```c#
-/// <summary>
-/// 展示开屏广告，由于广告加载需要时间，建议开发者在应用启动时多等待几秒再调用开屏广告
-/// </summary>
-/// <param name="sceneId">广告场景ID，仅用于看数使用，开发者可自定义，但是请保证不同广告场景的命名不同</param>
-/// <param name="didHide">广告关闭回调</param>
-/// <param name="didFail">展示失败回调</param>
-[[DDLLManager getInstance]showOpenAdWithSceneId:@"" didHide:^(NSString * _Nullable adUnitId) {
-      //广告关闭回调
-    } didFail:^(NSString * _Nullable adUnitId) {
-      // 展示失败回调
-    }];
-```
-
-### 统计
-
-#### 打点到BI
-
-附带拓展参数
-
-```c#
-//第一种map做参数
-NSMutableDictionary *map = [NSMutableDictionary dictionary];
-map[@"key"] = @"value";
-[[DDLLManager getInstance]trackWithEventName:@"eventName" dictMap:map];
-  
-//第二种json字符串做参数
-[[DDLLManager getInstance]trackWithEventName:@"eventName" eventJson:@"{\"key\":\"value\"}"];
-```
-
-
-
-#### 打点到AppsFlyer
-
-如果有特殊需要，可使用下列方法打点到AppsFlyer
-
-```c#
-NSMutableDictionary *map = [NSMutableDictionary dictionary];
-map[@"key"] = @"value";
-   
-[[DDLLManager getInstance]afTrackWithEventName:@"eventName" eventMap:map];
-//其中key 也可以使用 AFInAppEvents.XXXX 内置的key
-```
-
-
-
-### 网络接口
-
-⚠️ ***注意：所有接口请在初始化完成后调用。***
-
-#### 获取配置
-
-获取普通游戏配置
-
-```c#
-/// <summary>
-/// 请求游戏配置
-/// </summary>
-/// <param name="bizCodes">请求的业务编码，多个之间使用半角逗号分隔</param>
-/// <param name="completeAction"></param>
-[[DDLLManager getInstance]feachDDLLGameConfigWithBizCodes:@"test" andCallback:^(BOOL
-success, NSArray<DDLLGameConfig *> * _Nullable response) {
-if (success) {
-   for (DDLLGameConfig * f in response) {
-      NSLog(@"当前游戏配置：%@",f.configContent);
-    }
-  }
-}];
-```
-
-
-
-#### 获取Ark配置
-
-```c#
-/// <summary>
-/// 请求方舟策略
-/// </summary>
-/// <param name="bizCodes">请求的业务编码，多个之间使用半角逗号分隔</param>
-/// <param name="completeAction"></param>
-[[DDLLManager getInstance]feachArkConfigWithBizCodes:@"test" andCallback:^(BOOL success, NSArray<DDLLArkData *> * _Nullable response) {
-        NSLog(@"当前方舟配置LocalValueConfig：");
-        if (success) {
-            NSLog(@"当前方舟配置LocalValueConfig：success");
-          //  for (ArkData * f in response) {
-               
-          //  }
-        }
-        
-    }];
-```
-
-#### 获取提现接口
-
-```c#
-/// <summary>
-/// 申请提现
-/// </summary>
-/// <param name="assetsType">资产类型</param>
-/// <param name="paymentType">支付方式Paypal,giftcard-amazon,payerMax-PagBank,payerMax-PIX,payerMax-DANA中任一种</param>
-/// <param name="account">提现账户：即用户邮箱或电话号码</param>
-/// <param name="name">PIX类型必填 提现用户昵称</param>
-/// <param name="amount">提现数额</param>
-/// <param name="act"></param>
-/// <param name="disanfangzhanghuleixing">PIX类型必填 ，传值 E、P、C、B E:邮箱 P:手机号 C:(个人税号(CPF)/企业税号(CNPJ) B:(虚拟支付地址(EVP))</param>
-/// <param name="gerenshibiehao">PIX类型必填 gerenshibiehao 收款方个人识别号码，在不同国家下可选类型不同 格式： 999.999.999-99 或 99999999999</param>
-[[DDLLManager getInstance] requestMicroWDWithAssetsType:0 paymentType:@"" account:@"" name:@"" amount:0.0 disanfangzhanghuleixing:@"" gerenshibiehao:@"" completion:^(BOOL success, DDLLWDRequestResponse * _Nonnull response) {
-        // NSLog(@"请求提现记录接口:%@",response?[response toDictionary]:@"");
-}];
-
-```
-
-#### 获取提现记录接口
-
-```c#
-     /// <summary>
-     /// 获取提现记录
-     /// </summary>
-     /// <param name="assetsType">货币类型,0:金币提现,8:现金提现</param>
-     /// <param name="withdrawType">0:普通提现，2: 固定小额提款, 3: 邀请好友提现</param>
-     /// <param name="act"></param>
-
-[[DDLLManager getInstance] getWDRecordWithCompletion:^(BOOL success, DDLLWDRecordData * _Nonnull data) {
-    // NSLog(@"请求提现记录接口:%@",data?[data toDictionary]:@"");
-}];
-
-```
-
-#### **激励用户判断**
-
-```objective-c
-BOOL isRewarded = [[DDLLManager getInstance]home];//返回YES（1）激励用户，NO（0）非激励用户
-```
-
-#### 服务器时间：
-
-```objective-c
-        NSLog(@"服务器时间戳：%ld",[[DDLLManager getInstance]getServerRealTimeStamp]);
-         NSLog(@"服务器时间日期%@",[[DDLLManager getInstance]getServerRealTimeData]);
-
-```
-
-## 数据结构
-
-### UserInfo
-
-```c#
-@interface DDLLUserInfo : NSObject <NSCoding>
-
-@property (nonatomic, strong) NSString *uk; // 用户ID
-@property (nonatomic, assign) int activeDays; // 活跃天数
-@property (nonatomic, assign) int registerDays; // 注册天数
-@property (nonatomic, assign) double serverTimeStamp; // 服务器时间戳
-@property (nonatomic, strong) NSString *now; // 服务器时间
-@property (nonatomic, strong) NSString *country; // 国家
-@property (nonatomic, assign) double createTimeStamp; // 注册时间
-@property (nonatomic, strong) NSString *inviteCode; // 邀邀请码
-@property (nonatomic, strong) NSString *channel; // 渠道信息
-@end
-```
-
-提现记录：
-
-```objective-c
-@interface DDLLWDRecordItemData : NSObject
-
-/// 记录ID
-@property (nonatomic, strong) NSString *identifier;
-
-/// 提现类型, (默认)0:金币提现 , 8: 现金提现
-@property (nonatomic, assign) int zichanleixing; 
-
-/// 提现方式, Paypal, Zhifubao, ovo, paytm, phonebill-Telkomsel, phonebill-Tairtel, giftcard-amazon中任一种
-@property (nonatomic, strong) NSString *zhifufangshi; 
-
-/// 提现金额
-@property (nonatomic, assign) float total; 
-
-/// 0:用户提交申请 , 1:已审核通过, 2: 驳回, 3: 已打款
-@property (nonatomic, assign) int status;
-
-/// 提现时间
-@property (nonatomic, strong) NSString *tixianshijian;
-
-@end
-
-```
-
-
-
-## 常见问题
+# IOS常见问题
 
 ### 1.-mno-thumb 错误
 
-![ios-error2](./pics/ios-error2.png)
+![ios-error2](.\pics\ios-error2.png)
 
 ### 2.无权限：
 
-![ios-error4](./pics/ios-error4.png)
+![ios-error4](.\pics\ios-error4.png)
 
 ### 3.ios项目在手机上启动后崩溃，看到有文件缺失的log（no such file）
 
-![ios-error3](./pics/ios-error3.png)
-
-
+![ios-error3](.\pics\ios-error3.png)
 
 #### 4.卡在Max初始化语句崩溃：+[NSInvocation _invocationWithMethodSignature:frame:]: method signature argument cannot be nil
-
-(null)
 
 原因：可能有缓存。
 
@@ -461,16 +585,15 @@ BOOL isRewarded = [[DDLLManager getInstance]home];//返回YES（1）激励用户
 
 #### 5.出现以下报错：
 
-![企业微信截图_e4fbbaff-fad2-427d-95c1-ea22a1f813fd](./pics/Sandbox.png)
+![企业微信截图_e4fbbaff-fad2-427d-95c1-ea22a1f813fd(./pics/Sandbox.png)](.\pics/Sandbox.png)
 
 原因：开启了沙盒
 
 解决方法：关闭用户沙盒：User Script Sandboxing 设置为NO
 
-![DEALSANDBOX](./pics/DEALSANDBOX.png)
+![DEALSANDBOX](./pics//DEALSANDBOX.png)
 
-#### 6.报try和catch的问题：
-![企业微信截图_605e4a28-1b07-46cf-8585-efd249b5f9dc](./pics/try.png)
+6.报try和catch的问题：![企业微信截图_605e4a28-1b07-46cf-8585-efd249b5f9dc](.\pics/try.png)
 
 解决办法:
 
