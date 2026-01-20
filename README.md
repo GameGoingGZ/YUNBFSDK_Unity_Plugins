@@ -567,15 +567,15 @@ $(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)
 
 ### 1.-mno-thumb 错误
 
-![ios-error2](.\pics\ios-error2.png)
+![ios-error2](./pics/ios-error2.png)
 
 ### 2.无权限：
 
-![ios-error4](.\pics\ios-error4.png)
+![ios-error4](./pics/ios-error4.png)
 
 ### 3.ios项目在手机上启动后崩溃，看到有文件缺失的log（no such file）
 
-![ios-error3](.\pics\ios-error3.png)
+![ios-error3](./pics/ios-error3.png)
 
 #### 4.卡在Max初始化语句崩溃：+[NSInvocation _invocationWithMethodSignature:frame:]: method signature argument cannot be nil
 
@@ -585,7 +585,7 @@ $(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)
 
 #### 5.出现以下报错：
 
-![企业微信截图_e4fbbaff-fad2-427d-95c1-ea22a1f813fd(./pics/Sandbox.png)](.\pics/Sandbox.png)
+![企业微信截图_e4fbbaff-fad2-427d-95c1-ea22a1f813fd(./pics/Sandbox.png)](./pics/Sandbox.png)
 
 原因：开启了沙盒
 
