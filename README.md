@@ -459,39 +459,8 @@ public class ArkKeyValue
 
 # Xcode项目配置：
 
-1.配置podfile文件：（这里为必须。另外如需添加其他广告源见[广告源配置]()）：**以下已经固定常见广告源版本，如果不需要的广告源可以去掉对应广告源的可选部分。必须部分不能去掉**。
-
-```
-source 'https://cdn.cocoapods.org/' 											 # 必须
-source 'https://github.com/GameGoingGZ/CocoaPodsSpecs.git' # 必须
-
-platform :ios, '13.0'
-
-target 'UnityFramework' do
-  pod 'FirebaseAnalytics', :modular_headers => true      #必须
-  pod 'FirebaseCrashlytics', :modular_headers => true    #必须
-  pod 'FirebaseRemoteConfig', :modular_headers => true   #必须
-  pod 'AppsFlyerFramework','6.15.3'                      #必须
-  pod 'AppLovinSDK','13.3.1'                           #必须
-  pod 'AppLovinMediationBidMachineAdapter','3.3.0.0.2'  #可选，BidMachine广告源
-  pod 'AppLovinMediationBigoAdsAdapter','4.8.1.0'       #可选，Bigo广告源
-  pod 'AppLovinMediationByteDanceAdapter','7.4.1.0.0'    #可选，pangle广告源
-  pod 'AppLovinMediationFacebookAdapter','6.20.1.0'      #可选，Facebook广告源
-  pod 'AppLovinMediationFyberAdapter' ,'8.3.8.0'       #可选，fyber/dt exchange广告源
-  pod 'AppLovinMediationGoogleAdapter','12.8.0.0'          #可选，admob广告源
-  pod 'AppLovinMediationGoogleAdManagerAdapter' ,'12.8.0.0'    #可选，google ad manager广告源
-  pod 'AppLovinMediationIronSourceAdapter' ,'8.10.0.0.1'     #可选，ironsource广告源
-  pod 'AppLovinMediationMintegralAdapter','7.7.8.0.0'        #可选，Mintegral广告源
-  pod 'AppLovinMediationVungleAdapter','7.5.2.0'             #可选，vungle广告源
-  pod 'AppLovinMediationUnityAdsAdapter','4.16.5.0'        #可选，unity广告源
-  pod 'AppLovinMediationVerveAdapter','3.6.0.0'           #可选，verve广告源
-  pod 'AppLovinMediationYandexAdapter','7.15.1.0'            #可选，yandex广告源
-  pod 'AppLovinMediationMolocoAdapter','4.1.2.0'          #可选，moloco广告源
-  pod 'AppLovinMediationChartboostAdapter','9.9.0.0'     #可选，chartboost广告源
-  pod 'AppLovinMediationInMobiAdapter','10.8.3.1'         #可选，inmobi广告源
-end
-use_frameworks! :linkage => :static
-```
+1.podfile文件
+从 Unity 导出Xcode 项目时，在项目目录下会自动生成`podfile`文件
 
 2.podfile文件夹目录下执行脚本：
 
@@ -499,6 +468,10 @@ use_frameworks! :linkage => :static
 
 ```
 pod install --repo-update
+
+# 如果上面的命令用时比较长或出错，可以请使用下面2个命令
+# pod repo update gamegoinggz-cocoapodsspecs 
+# pod install
 ```
 
 3.xcode 工程根目录位置打开终端 -> 执行 ruby AppLovinQualityServiceSetup-ios.rb
