@@ -566,7 +566,7 @@ $(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)
 
 ![DEALSANDBOX](./pics//DEALSANDBOX.png)
 
-6.报try和catch的问题：![企业微信截图_605e4a28-1b07-46cf-8585-efd249b5f9dc](.\pics/try.png)
+6.报try和catch的问题：![企业微信截图_605e4a28-1b07-46cf-8585-efd249b5f9dc](./pics/try.png)
 
 解决办法:
 
